@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filter va Grafiklar</title>
+    <!-- JQuery va DataTables -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .active { background-color: #007bff; color: white; }
+        .content-section { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Filterlar -->
+    <div>
+        <h3>Regionlar:</h3>
+        <input type="checkbox" class="region" value="Toshkent"> Toshkent
+        <input type="checkbox" class="region" value="Samarkand"> Samarkand
+        <input type="checkbox" class="region" value="Buxoro"> Buxoro
+        <input type="checkbox" class="region" value="Fargona"> Fargona
+
+        <h3>Yillar:</h3>
+        <input type="checkbox" class="year" value="2023"> 2023
+        <input type="checkbox" class="year" value="2024"> 2024
+
+        <h3>Seriyalar:</h3>
+        <input type="checkbox" class="series" value="A"> A
+        <input type="checkbox" class="series" value="B"> B
+        <input type="checkbox" class="series" value="C"> C
+    </div>
+
+    <!-- Jadval -->
+    <table id="dataTable" class="display">
+        <thead>
+            <tr>
+                <th>Region</th>
+                <th>Yil</th>
+                <th>Seriya</th>
+                <th>Qiymat</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <!-- Grafik -->
+    <canvas id="chartCanvas"></canvas>
+
+    <!-- Default Section -->
+    <div id="section-default">
+        <h4>Ma'lumotlarni ko'rish uchun filterlarni tanlang</h4>
+    </div>
+
+    <!-- Sahifaga o'tish -->
+    <a href="boshqa_sahifa.html" class="navigate">Boshqa Sahifaga O'tish</a>
+
+    <script>
+        let table;
+        let chart;
+
+        $(document).ready(function () {
+            // DataTable yaratish
+            table = $('#dataTable').DataTable();
+
+            // Filterlarni yuklash va qo'llash
+            loadFilters();
+            filterData();
+
+            // Filterlarni o'zgartirishni kuzatish
+            $('.region, .year, .series').change(function () {
+                filterData();
+                saveFilters(); // O'zgartirilgan filterlarni saqlash
+            });
+        });
+
+        // Filterlarni saqlash
+        function saveFilters() {
+            let selectedRegions = $('.region:checked').map(function () { return this.value; }).get();
+            let selectedYears = $('.year:checked').map(function () { return this.value; }).get();
+            let selectedSeries = $('.series:checked').map(function () { return this.value; }).get();
+
+            localStorage.setItem('selectedRegions', JSON.stringify(selectedRegions));
+            localStorage.setItem('selectedYears', JSON.stringify(selectedYears));
+            localStorage.setItem('selectedSeries', JSON.stringify(selectedSeries));
+        }
+
+        // Filterlarni yuklash
+        function loadFilters() {
+            let savedRegions = JSON.parse(localStorage.getItem('selectedRegions')) || [];
+            let savedYears = JSON.parse(localStorage.getItem('selectedYears')) || [];
+            let savedSeries = JSON.parse(localStorage.getItem('selectedSeries')) || [];
+
+            savedRegions.forEach(region => {
+                $(`.region[value="${region}"]`).prop('checked', true);
+            });
+            savedYears.forEach(year => {
+                $(`.year[value="${year}"]`).prop('checked', true);
+            });
+            savedSeries.forEach(series => {
+                $(`.series[value="${series}"]`).prop('checked', true);
+            });
+        }
+
+        // Grafikni yangilash
+        function updateChart(data) {
+            if (chart) chart.destroy();
+
+            let ctx = document.getElementById('chartCanvas').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.year),
+                    datasets: [{
+                        label: 'Qiymat',
+                        data: data.map(d => d.value),
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2
+                    }]
+                }
+            });
+        }
+
+        // Filterni qo'llash va ma'lumotlarni yangilash
+        function filterData() {
+            let selectedRegions = $('.region:checked').map(function () { return this.value; }).get();
+            let selectedYears = $('.year:checked').map(function () { return this.value; }).get();
+            let selectedSeries = $('.series:checked').map(function () { return this.value; }).get();
+
+            if (selectedRegions.length === 0 && selectedYears.length === 0 && selectedSeries.length === 0) {
+                table.clear().draw(); // Jadvalni tozalash
+                if (chart) {
+                    chart.destroy(); // Grafikani o'chirish
+                }
+                $('#section-default').show();
+                return;
+            }
+
+            let dummyData = [
+                { region: 'Toshkent', year: '2023', series: 'A', value: 100 },
+                { region: 'Samarkand', year: '2023', series: 'B', value: 150 },
+                { region: 'Toshkent', year: '2024', series: 'A', value: 200 },
+                { region: 'Samarkand', year: '2024', series: 'B', value: 250 },
+                { region: 'Buxoro', year: '2024', series: 'A', value: 220 },
+                { region: 'Fargona', year: '2023', series: 'C', value: 140 }
+            ];
+
+            let filteredData = dummyData.filter(item =>
+                selectedRegions.includes(item.region) &&
+                selectedYears.includes(item.year) &&
+                selectedSeries.includes(item.series)
+            );
+
+            table.clear().rows.add(filteredData.map(d => [d.region, d.year, d.series, d.value])).draw();
+            updateChart(filteredData);
+
+            $('#section-default').hide();
+        }
+
+        // Sahifadan chiqishda filterlarni tozalash
+        window.addEventListener('beforeunload', function () {
+            localStorage.removeItem('selectedRegions');
+            localStorage.removeItem('selectedYears');
+            localStorage.removeItem('selectedSeries');
+        });
+
+        // Sahifalararo o'tishda filterlarni tozalash
+        $('.navigate').on('click', function () {
+            localStorage.removeItem('selectedRegions');
+            localStorage.removeItem('selectedYears');
+            localStorage.removeItem('selectedSeries');
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фильтр, Жадвал ва График</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="assets/js/script.js"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+
+    <style>
+        .filter-item {
+            cursor: pointer;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .filter-container {
+            display: none;
+            margin-left: 20px;
+        }
+        .btn-custom.active {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="d-flex button-container mb-3">
+            <button class="btn btn-custom active" onclick="setActive(this, 'section-table')">
+                <i class="bi bi-grid"></i> Жадвал
+            </button>
+            <button class="btn btn-custom" onclick="setActive(this, 'section-chart')">
+                <i class="bi bi-bar-chart"></i> График
+            </button>
+            <button class="btn btn-custom" onclick="setActive(this, 'section-report')">
+                <i class="bi bi-info-circle"></i> Репорт
+            </button>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="filter-item" onclick="toggleFilters('regionFilters')"><i class="fas fa-globe"></i> Худудлар</div>
+                <div id="regionFilters" class="filter-container">
+                    <input type="checkbox" class="region" value="Toshkent"> Тошкент <br>
+                    <input type="checkbox" class="region" value="Samarkand"> Самарқанд <br>
+                </div>
+
+                <div class="filter-item" onclick="toggleFilters('yearFilters')"><i class="fas fa-calendar"></i> Йиллар</div>
+                <div id="yearFilters" class="filter-container">
+                    <input type="checkbox" class="year" value="2023"> 2023 <br>
+                    <input type="checkbox" class="year" value="2024"> 2024 <br>
+                </div>
+
+                <div class="filter-item" onclick="toggleFilters('seriesFilters')"><i class="fas fa-list"></i> Серия</div>
+                <div id="seriesFilters" class="filter-container">
+                    <input type="checkbox" class="series" value="A"> A <br>
+                    <input type="checkbox" class="series" value="B"> B <br>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div id="section-table" class="content-section">
+                    <h5>Жадвал</h5>
+                    <table id="dataTable" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Худуд</th>
+                                <th>Йил</th>
+                                <th>Серия</th>
+                                <th>Қиймат</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div id="section-chart" class="content-section" style="display: none;">
+                    <h5>График</h5>
+                    <canvas id="chartCanvas"></canvas>
+                </div>
+
+                <div id="section-report" class="content-section" style="display: none;">
+                    <h5>Репорт</h5>
+                    <p>Бу ерда репорт маълумотлари чиқади.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let table;
+        let chart;
+
+        $(document).ready(function() {
+            table = $('#dataTable').DataTable();
+            $('.region, .year, .series').change(filterData);
+            filterData();
+        });
+
+        function setActive(button, sectionId) {
+            $('.btn-custom').removeClass('active');
+            $(button).addClass('active');
+            $('.content-section').hide();
+            $('#' + sectionId).show();
+        }
+
+        function toggleFilters(filterId) {
+            $('#' + filterId).slideToggle();
+        }
+
+        function updateChart(data) {
+            if (chart) chart.destroy();
+            let ctx = document.getElementById('chartCanvas').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.region),
+                    datasets: [{
+                        label: 'Қиймат',
+                        data: data.map(d => d.value),
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                    }]
+                }
+            });
+        }
+
+        function filterData() {
+            let selectedRegions = $('.region:checked').map(function() { return this.value; }).get();
+            let selectedYears = $('.year:checked').map(function() { return this.value; }).get();
+            let selectedSeries = $('.series:checked').map(function() { return this.value; }).get();
+
+            let dummyData = [
+                {region: 'Toshkent', year: '2023', series: 'A', value: 100},
+                {region: 'Samarkand', year: '2023', series: 'B', value: 150},
+                {region: 'Toshkent', year: '2024', series: 'A', value: 200},
+                {region: 'Samarkand', year: '2024', series: 'B', value: 250}
+            ];
+
+            let filteredData = dummyData.filter(item => 
+                (selectedRegions.length === 0 || selectedRegions.includes(item.region)) &&
+                (selectedYears.length === 0 || selectedYears.includes(item.year)) &&
+                (selectedSeries.length === 0 || selectedSeries.includes(item.series))
+            );
+
+            table.clear().rows.add(filteredData.map(d => [d.region, d.year, d.series, d.value])).draw();
+            updateChart(filteredData);
+        }
+    </script>
+</body>
+</html>

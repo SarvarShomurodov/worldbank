@@ -1,0 +1,292 @@
+.search_container {
+    max-width: 300px;
+    position: relative;
+}
+.search_box {
+    width: 90%;
+    padding: 10px 12px;
+    padding-right: 35px;
+    border: 1px solid #ced4da;
+    border-radius: 0px;
+    outline: none;
+    background-color: #F0F3FC;
+}
+.search_container i {
+    position: absolute;
+    top: 50%;
+    right: 42px;
+    transform: translateY(-50%);
+    color: gray;
+}
+.main-container {
+    position: relative;
+    padding: 20px;
+    background-color: white;
+    border-radius: 0px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.content-block::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 0.1px;
+    background-color: #e6e6e6;
+}
+.content-header {
+    display: flex;
+    align-items: center; /* Vertikal markazlash */
+    gap: 9px; /* Elementlar orasidagi masofa */
+}
+.content-info,
+.content-tag {
+  align-self: flex-start; /* Elementlarni yuqoriga ko‘tarish */
+}
+
+/* Yoki alternativ yondashuv */
+.content-info,
+.content-tag {
+  margin-top: 2px; /* Elementlarni biroz yuqoriga surish */
+}
+.content-tag {
+    color: #124265;
+}
+.text-content {
+    font-size: 14px;
+}
+.hidden-text {
+    display: none;
+}
+.show-more {
+    color: #2487ce;
+    cursor: pointer;
+}
+.content-title {
+    color: rgb(70, 70, 70);
+}
+/* .block-title-p {
+    color: #2487ce;
+} */
+.block-title {
+  display: flex;
+  align-items: center;
+  gap: 5px; /* Elementlar orasidagi masofa */
+}
+
+.block-title img {
+  display: block;
+}
+
+.block-title p {
+  margin: 0;
+  color: #2487ce;
+}
+.block-title p a{
+  margin: 0;
+  color: #2487ce;
+}
+.block-title-p {
+  font-size: 14px;
+}
+.underline-title {
+  position: relative;
+  text-align: center;
+  margin-bottom: 10px;
+  color: white !important;;
+}
+
+.underline-title::after {
+  content: "";
+  display: block;
+  width: 10%; /* Chiziq kengligi */
+  height: 7px; /* Chiziq qalinligi */
+  background-color: #f5a623; /* Sariq rang */
+  margin: 5px auto 0 auto;
+  margin-top: 25px;
+}
+  /* Footer umumiy stil */
+.email-box {
+  width: 23%;  /* Ekran katta bo'lsa, 23% kenglik bo'lsin */
+  min-width: 200px;  /* Ekran kichiklashsa ham inputning kengligi 200px dan kichik bo'lmasin */
+  padding: 18px 12px;
+  border: 1px solid #bdbdbd;
+  border-radius: 0px;
+  outline: none;
+  background-color: #022a4e;
+}
+
+.email-container i {
+  position: absolute;
+  top: 50%;
+  right: 44%;
+  transform: translateY(-50%);
+  color: gray;
+}
+.email-box::placeholder {
+  color: #fff;
+  font-weight: bold;
+  font-size: 17px;
+  text-align: center;
+}
+
+.footer-div {
+  background-color: #002b4f;
+  padding: 10px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap;  
+}
+
+.line {
+  height: 40px;
+  width: 100%;
+  background: repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.1) 1px,
+      transparent 2px,
+      transparent 6px
+  );
+}
+
+.support {  
+  padding: 10px 30px;
+  border-radius: 50px;
+  color: #ffffff;
+  font-weight: bold;
+  text-decoration: none;
+  z-index: 1;
+  display: flex;
+  align-items: center;  /* Ikonkani va matnni markazga qo'yadi */
+  font-size: 20px;
+}
+
+#section-default {
+  margin-left: 20%;
+}
+
+.support i {
+  margin-right: 4px; /* Ikonkani va matn orasida bo'shliq qo'shadi */
+  font-size: 20px;
+}
+
+.line:first-child {
+  margin-right: 0px;
+}
+
+.line:last-child {
+    margin-left: 0px;
+}
+.filter-box {
+  border-radius: 10px;
+  width: 250px;
+  color: #002b4f;
+}
+.filter-title {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+.filter-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 16px;
+  /* display: block; */
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+.filter-container {
+  display: none;
+  margin-left: 20px;
+}
+.filter-item i {
+  margin-right: 10px;
+}
+.dashed-line {
+  border-top: 1px dashed #ced4da;
+  margin: 2px 0;
+}
+/* MODAL UCHUN STIL */
+.modal-content {
+  border-radius: 0 !important; /* To‘rtburchak shakl */
+}
+.modal-header {
+  border-bottom: 1px dashed #dee2e6;
+}
+.modal-header h4 {
+  color: #444444;
+}
+.modal-footer {
+  justify-content: center; /* Filter tugmasini markazga qo‘yish */
+  background-color: #f1f1f1;
+}
+.btn-filter {
+  background: #002b4f;
+  color: white;
+  border: none;
+  padding: 2px 21px;
+  font-size: 16px;
+  border-radius: 0px;
+  cursor: pointer;
+}
+.btn-filter:hover {
+  background: #4d9dd7;
+}
+#xududModal .modal-dialog {
+  max-width: 43%;
+  width: 90%;
+}
+.form-check {
+  margin-bottom: 5%;
+}
+.form-check .form-check-input {
+  border-radius: 0;
+}
+.btn-custom {
+  border: 1px solid #ccc;
+  background-color: #f0f3fc;
+  color: black;
+  border-radius: 0;
+}
+.btn-custom.active {
+  background-color: #1f3b57;
+  color: white;
+}
+.dropdown-toggle-button {
+  background-color: #f8f9fa;
+  border: 1px solid #ccc;
+  color: black;
+  margin-top: -5%;
+  margin-bottom: 7%;
+ 
+}
+/* Tugmalar kichik ekranda markazda chiqishi uchun */
+.button-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+@media (max-width: 768px) {
+  .button-container {
+      justify-content: center;
+  }
+}
+.section-header {
+  display: none; /* Barcha bo‘limlar avval yashirin bo‘ladi */
+}
+.section-header.active {
+  display: block; /* Faqat faollashtirilgan bo‘lim ko‘rinadi */
+}
+.section-header img {
+  max-width: 100%;
+  height: auto;
+  margin-top: 10px;
+}
+.dropdown {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
