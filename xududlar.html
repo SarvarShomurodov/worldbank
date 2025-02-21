@@ -26,6 +26,12 @@
 		<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 		<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css" />
 		<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
+		<link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" />
+
+		<!-- <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+		  -->
+<!-- Excel uchun XLSX Kutubxonasi -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 		<!-- Main CSS File -->
 		<link href="assets/css/style.css" rel="stylesheet" />
@@ -144,9 +150,12 @@
 									<div class="dropdown">
 										<button class="btn btn-custom dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-download"></i> Юклаш</button>
 										<ul class="dropdown-menu">
-											<li><a class="dropdown-item" href="#">Excel</a></li>
-											<li><a class="dropdown-item" href="#">CSV</a></li>
-											<li><a class="dropdown-item" href="#">TXT</a></li>
+											<li><a class="dropdown-item" id="downloadExcelBtn" href="#">Excel</a></li>
+											<li><a class="dropdown-item" id="downloadCSVBtn" href="#">CSV</a></li>
+											<li><a class="dropdown-item" id="downloadTXTBtn" href="#">TXT</a></li>
+											<!-- <button id="downloadExcelBtn" class="btn-custom">Excel yuklab olish</button>
+											<button id="downloadCSVBtn" class="btn-custom">CSV yuklab olish</button>
+											<button id="downloadTXTBtn" class="btn-custom">TXT yuklab olish</button> -->
 										</ul>
 									</div>
 								</div>
@@ -160,7 +169,7 @@
 										<li><i class="fas fa-square" style="font-size: 10px; margin-right: 5px;"></i>Серия</li>
 									</ul>
 								</div>
-								<div id="section-table" class="content-section" style="display: block;">
+								<div id="section-table" class="content-section" style="display: none;">
 									<h5>Жадвал</h5>
 									<table id="dataTable" class="display" style="width:100%">
 										<thead>
@@ -210,42 +219,46 @@
 		</footer>
 		<a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 		<script>
-						let table;
-			let chart;
+			let table;
+let chart;
+let filteredData = []; // 🔥 Filtrlashdan o'tgan ma'lumotlarni saqlash
 
-			$(document).ready(function () {
-			    // DataTable yaratish
-			    table = $('#dataTable').DataTable();
+$(document).ready(function () {
+    // DataTable yaratish
+    table = $('#dataTable').DataTable();
 
-			    // Filterlarni yuklash (agar mavjud bo‘lsa)
-			    loadFilters();
+    // Filterlarni kuzatish
+    $('.region, .year, .series').change(filterData);
 
-			    // Filterlar o'zgarishini kuzatish
-			    $('.region, .year, .series').change(filterData);
+    // Boshlang'ich filterni tekshirish
+    filterData();
 
-			    // Boshlang'ich filterni tekshirish
-			    filterData();
-			});
+    // 🔗 Tugmalarni funksiya bilan bog'lash
+    $('#downloadExcelBtn').on('click', downloadExcel);
+    $('#downloadCSVBtn').on('click', downloadCSV);
+    $('#downloadTXTBtn').on('click', downloadTXT);
+});
+function toggleFilters(filterId) {
+    $('#' + filterId).slideToggle();
+}
+// 🔹 Grafikni yangilash
+function updateChart(data) {
+    if (chart) chart.destroy();
 
-			// 🔹 Filterlar yuklanganida tekshirish
-			function loadFilters() {
-			    let hasFilters = $('.region, .year, .series').length > 0; // Filterlar mavjudligini tekshirish
-
-			    if (!hasFilters) {
-			        showNoFilterMessage();
-			    }
-			}
-
-			// 🔹 Agar filter noto‘g‘ri tanlangan bo‘lsa, bildirish chiqarish
-			function showNoFilterMessage() {
-			    $('#section-default').show();
-			    $('#section-table, #section-chart, #section-report').hide();
-
-			    // 🚫 Tugmalarni o‘chirib qo‘yish
-			    $('.btn-custom').prop('disabled', true);
-			}
-
-			function setActive(button, section) {
+    let ctx = document.getElementById('chartCanvas').getContext('2d');
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.map(d => d.year),
+            datasets: [{
+                label: 'Қиймат',
+                data: data.map(d => d.value),
+                backgroundColor: 'rgba(54, 162, 235, 0.6)'
+            }]
+        }
+    });
+}
+function setActive(button, section) {
     // Barcha content sectionlarini yashirish
     const sections = document.querySelectorAll('.content-section');
     sections.forEach(s => s.style.display = 'none');
@@ -260,79 +273,108 @@
     // Tanlangan tugmaga "active" klassini qo'shish
     button.classList.add('active');
 }
+// 🔹 Dummy ma'lumotlar
+let dummyData = [
+    { region: 'Toshkent', year: '2023', series: 'A', value: 100 },
+    { region: 'Samarkand', year: '2023', series: 'B', value: 150 },
+    { region: 'Toshkent', year: '2024', series: 'A', value: 200 },
+    { region: 'Samarkand', year: '2024', series: 'B', value: 250 },
+    { region: 'Buxoro', year: '2024', series: 'A', value: 220 },
+    { region: 'Buxoro', year: '2024', series: 'B', value: 270 },
+    { region: 'Buxoro', year: '2023', series: 'A', value: 220 },
+    { region: 'Buxoro', year: '2023', series: 'B', value: 270 },
+    { region: 'Fargona', year: '2023', series: 'A', value: 150 },
+    { region: 'Fargona', year: '2023', series: 'B', value: 180 },
+    { region: 'Fargona', year: '2023', series: 'C', value: 140 },
+    { region: 'Andijon', year: '2019', series: 'A', value: 160 }
+];
 
+// 🔹 Filter bo‘yicha ma’lumotlarni yangilash
+function filterData() {
+    let selectedRegions = $('.region:checked').map(function () { return this.value; }).get();
+    let selectedYears = $('.year:checked').map(function () { return this.value; }).get();
+    let selectedSeries = $('.series:checked').map(function () { return this.value; }).get();
 
-			// 🔹 Filterni ko'rsatish/yashirish
-			function toggleFilters(filterId) {
-			    $('#' + filterId).slideToggle();
-			}
+    // 🔹 Tanlangan filterlar bo‘yicha saralash
+    filteredData = dummyData.filter(item =>
+        selectedRegions.includes(item.region) &&
+        selectedYears.includes(item.year) &&
+        selectedSeries.includes(item.series)
+    );
 
-			// 🔹 Grafikni yangilash
-			function updateChart(data) {
-			    if (chart) chart.destroy();
+    // 🔹 Jadvalni yangilash
+    table.clear().rows.add(filteredData.map(d => [d.region, d.year, d.series, d.value])).draw();
 
-			    let ctx = document.getElementById('chartCanvas').getContext('2d');
-			    chart = new Chart(ctx, {
-			        type: 'bar',
-			        data: {
-			            labels: data.map(d => d.region),
-			            datasets: [{
-			                label: 'Қиймат',
-			                data: data.map(d => d.value),
-			                backgroundColor: 'rgba(54, 162, 235, 0.6)'
-			            }]
-			        }
-			    });
-			}
+    // 🔹 Grafikni yangilash
+    updateChart(filteredData);
+}
 
-			// 🔹 Filter bo‘yicha ma’lumotlarni yangilash
-			function filterData() {
-			    let selectedRegions = $('.region:checked').map(function () { return this.value; }).get();
-			    let selectedYears = $('.year:checked').map(function () { return this.value; }).get();
-			    let selectedSeries = $('.series:checked').map(function () { return this.value; }).get();
+// 🔸 Excel yuklab olish funksiyasi
+function downloadExcel() {
+    if (filteredData.length === 0) {
+        alert("Ma'lumot topilmadi!");
+        return;
+    }
 
-			    // 🔹 Dummy ma'lumotlar
-			    let dummyData = [
-				{ region: 'Toshkent', year: '2023', series: 'A', value: 100 },
-			    { region: 'Samarkand', year: '2023', series: 'B', value: 150 },
-			    { region: 'Toshkent', year: '2024', series: 'A', value: 200 },
-			    { region: 'Samarkand', year: '2024', series: 'B', value: 250 },
-			    { region: 'Buxoro', year: '2024', series: 'A', value: 220 },
-			    { region: 'Buxoro', year: '2024', series: 'B', value: 270 },
-				{ region: 'Buxoro', year: '2023', series: 'A', value: 220 },
-			    { region: 'Buxoro', year: '2023', series: 'B', value: 270 },
-				{ region: 'Fargona', year: '2023', series: 'A', value: 150 },
-				{ region: 'Fargona', year: '2023', series: 'B', value: 180 },
-			    { region: 'Fargona', year: '2023', series: 'C', value: 140 },
-			    { region: 'Andijon', year: '2019', series: 'A', value: 160 }
-			    ];
+    const ws = XLSX.utils.json_to_sheet(filteredData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Data");
+    XLSX.writeFile(wb, "data.xlsx");
+}
 
-			    // 🔹 Uchta filterdan hech bo‘lmaganda bittasi tanlanmagan bo‘lsa
-			    if (selectedRegions.length === 0 || selectedYears.length === 0 || selectedSeries.length === 0) {
-			        showNoFilterMessage();
-			        return;
-			    }
+// 🔸 CSV yuklab olish funksiyasi
+function downloadCSV() {
+    if (filteredData.length === 0) {
+        alert("Ma'lumot topilmadi!");
+        return;
+    }
 
-			    // 🔹 Tanlangan filterlar bo‘yicha saralash
-			    let filteredData = dummyData.filter(item =>
-			        selectedRegions.includes(item.region) &&
-			        selectedYears.includes(item.year) &&
-			        selectedSeries.includes(item.series)
-			    );
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Region,Year,Series,Value\n";
+    filteredData.forEach(row => {
+        csvContent += `${row.region},${row.year},${row.series},${row.value}\n`;
+    });
 
-			    // ✅ Tugmalarni yoqish (enable)
-			    $('.btn-custom').prop('disabled', false);
-			    $('#section-default').hide();
-			    $('#section-table, #section-chart').show();
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
 
-			    // 🔹 Jadvalni yangilash
-			    table.clear().rows.add(filteredData.map(d => [d.region, d.year, d.series, d.value])).draw();
+// 🔸 TXT yuklab olish funksiyasi
+function downloadTXT() {
+    if (filteredData.length === 0) {
+        alert("Ma'lumot topilmadi!");
+        return;
+    }
 
-			    // 🔹 Grafikni yangilash
-			    updateChart(filteredData);
-			}
+    let txtContent = "";
+    filteredData.forEach(row => {
+        txtContent += `Region: ${row.region}, Year: ${row.year}, Series: ${row.series}, Value: ${row.value}\n`;
+    });
+
+    const blob = new Blob([txtContent], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "data.txt";
+    link.click();
+}
+
 		</script>
-		<!-- <script src="assets/js/script.js"></script> -->
+			<script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+			<script src="assets/vendor/php-email-form/validate.js"></script>
+			<script src="assets/vendor/aos/aos.js"></script>
+			<script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
+			<script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+			<script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+			<script src="assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
+			<script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+		
+		<script src="assets/js/script.js"></script>
+		<script src="assets/js/main.js"></script>
 		<script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 	</body>
 </html>
